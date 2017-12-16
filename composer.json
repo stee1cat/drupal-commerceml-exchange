@@ -1,0 +1,20 @@
+{
+    "name": "stee1cat/drupal-commerceml-exchange",
+    "authors": [
+        {
+            "name": "Gennadiy Khatuntsev",
+            "email": "e.steelcat@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+        "type": "vcs",
+        "url": "https://github.com/stee1cat/commerceml-exchange"
+        }
+    ],
+    "require": {
+        "stee1cat/commerceml-exchange": "dev-master"
+    }
+}

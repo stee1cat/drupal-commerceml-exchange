@@ -1,0 +1,6 @@
+name = 1C Exchange
+description = 1C exchange service for Drupal Commerce.
+core = 7.x
+package = Commerce (contrib)
+version = "7.x-1.0"
+dependencies[] = commerce

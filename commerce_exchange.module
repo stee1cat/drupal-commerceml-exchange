@@ -1,0 +1,108 @@
+<?php
+
+use CommerceExchange\Category;
+use stee1cat\CommerceMLExchange\Catalog\Result;
+use stee1cat\CommerceMLExchange\CommerceMLExchange;
+use stee1cat\CommerceMLExchange\Config;
+use stee1cat\CommerceMLExchange\Event\Event;
+
+require 'vendor/autoload.php';
+
+function commerce_exchange_module($string = '') {
+    return 'commerce_exchange' . $string;
+}
+
+function commerce_exchange_load_classes() {
+    $pattern = __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . '*.php';
+
+    foreach (glob($pattern) as $file) {
+        $filename = pathinfo($file, PATHINFO_FILENAME);
+        module_load_include('php', commerce_exchange_module(), 'includes' . DIRECTORY_SEPARATOR . $filename);
+    }
+}
+
+function commerce_exchange_menu() {
+    $items['1c_exchange'] = [
+        'page callback' => commerce_exchange_module(),
+        'access callback' => true,
+        'type' => MENU_CALLBACK,
+    ];
+
+    $items['admin/commerce/config/commerce-exchange'] = [
+        'title' => '1C Exchange settings',
+        'description' => 'Configure 1C Exchange',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => [commerce_exchange_module('_settings_form')],
+        'access arguments' => ['configure ' . commerce_exchange_module()],
+        'file' => commerce_exchange_module() . '.admin.php',
+    ];
+
+    return $items;
+}
+
+function commerce_exchange_permission() {
+   return [
+       'configure ' . commerce_exchange_module() => [
+           'title' => t('Configure 1C Exchange'),
+           'description' => t('Allows users to configure 1C Exchange settings for the store'),
+           'restrict access' => true,
+       ],
+   ];
+}
+
+function commerce_exchange_product_new() {
+    $product = commerce_product_new('product');
+    $product->sku = 'PRODUCT-SKU3';
+    $product->title = 'Product Title';
+    $product->language = LANGUAGE_NONE;
+    $product->uid = 2;
+    $product->commerce_price[LANGUAGE_NONE][0] = [
+        'amount' => 10 * 100,
+        'currency_code' => 'USD',
+    ];
+
+    $product->field_product_tid[LANGUAGE_NONE][0]['tid'] = 1;
+
+    commerce_product_save($product);
+}
+
+function commerce_exchange() {
+    @set_time_limit(0);
+
+    commerce_exchange_load_classes();
+
+    $tempDirectory = drupal_realpath(variable_get(commerce_exchange_module('_file_path')));
+
+    $config = new Config();
+    $config->setUsername(variable_get(commerce_exchange_module('_username')))
+        ->setPassword(variable_get(commerce_exchange_module('_password')))
+        ->setZipSupport(false)
+        ->setLogPath($tempDirectory . DIRECTORY_SEPARATOR . 'logs')
+        ->setUploadPath($tempDirectory . DIRECTORY_SEPARATOR . 'files');
+
+    $exchange = new CommerceMLExchange($config);
+    $exchange->subscribe('parse', function (Event $event) {
+        /** @var Result $data */
+        $data = $event->getData();
+        $categories = $data->getGroups();
+        $products = $data->getProducts();
+
+        if (count($categories) > 0) {
+            $importer = new Category([
+                'vocabulary_machine_name' => 'd7c_commerce_categories'
+            ]);
+
+            $importer->import($categories);
+        }
+
+        if (count($products) > 0) {
+            // nope
+        }
+
+        cache_clear_all('*', null, true);
+    });
+
+    $exchange->start();
+
+    drupal_exit();
+}
