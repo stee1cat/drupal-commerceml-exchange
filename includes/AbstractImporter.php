@@ -20,13 +20,13 @@ abstract class AbstractImporter {
     protected $vocabulary;
 
     /**
-     * @var array
+     * @var Settings
      */
-    protected $options = [];
+    protected $settings;
 
-    public function __construct($options) {
-        $this->options = $options;
-        $this->vocabulary = Vocabulary::create(taxonomy_vocabulary_machine_name_load($options['vocabulary_machine_name']));
+    public function __construct(Settings $settings) {
+        $this->settings = $settings;
+        $this->createVocabulary();
     }
 
     /**
@@ -51,6 +51,12 @@ abstract class AbstractImporter {
         }
 
         return false;
+    }
+
+    protected function createVocabulary() {
+        $fields = taxonomy_vocabulary_machine_name_load($this->settings->getCategoryName());
+
+        $this->vocabulary = Vocabulary::create($fields);
     }
 
 }

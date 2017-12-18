@@ -81,7 +81,7 @@ class GroupImporter extends AbstractImporter {
             $term->weight = 0;
 
             foreach ($fields as $field => $value) {
-                if (in_array($field, ['tid', 'name', 'description', 'xml_id', 'parent', 'path'])) {
+                if (in_array($field, ['tid', 'name', 'description', self::XML_ID_FIELD_NAME, 'parent', 'path'])) {
                     $term->{$field} = $value;
                 }
             }

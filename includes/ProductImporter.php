@@ -37,7 +37,7 @@ class ProductImporter extends AbstractImporter {
                     ],
                     'field_product_category' => [
                         LANGUAGE_NONE => [[
-                            'bundle' => variable_get(commerce_exchange_module('_product_node_type'), 'product_display'),
+                            'bundle' => $this->settings->getProductNodeType(),
                             'tid' => $parents[0]->tid
                         ]]
                     ],
@@ -53,7 +53,7 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     protected function update($fields) {
-        $product = commerce_product_new(variable_get(commerce_exchange_module('_product_node_type'), 'product_display'));
+        $product = commerce_product_new($this->settings->getProductNodeType());
 
         foreach ($fields as $field => $value) {
             if (in_array($field, ['sku', 'title', 'language', 'uid', 'field_product_category', 'commerce_price'])) {
@@ -63,7 +63,7 @@ class ProductImporter extends AbstractImporter {
 
         commerce_product_save($product);
 
-        $node = (object) ['type' => variable_get(commerce_exchange_module('_product_node_type'), 'product_display')];
+        $node = (object) ['type' => $this->settings->getProductNodeType()];
         node_object_prepare($node);
         $node->title = $product->title;
         $node->uid = 1;

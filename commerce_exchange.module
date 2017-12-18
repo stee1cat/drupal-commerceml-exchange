@@ -2,6 +2,7 @@
 
 use CommerceExchange\GroupImporter;
 use CommerceExchange\ProductImporter;
+use CommerceExchange\Settings;
 use stee1cat\CommerceMLExchange\Catalog\Result;
 use stee1cat\CommerceMLExchange\CommerceMLExchange;
 use stee1cat\CommerceMLExchange\Config;
@@ -56,34 +57,31 @@ function commerce_exchange() {
 
     commerce_exchange_load_classes();
 
-    $tempDirectory = drupal_realpath(variable_get(commerce_exchange_module('_file_path'), 'public://commerceml-exchange/'));
+    $settings = new Settings();
+    $tempDirectory = drupal_realpath($settings->getFilePath());
 
-    $config = new Config();
-    $config->setUsername(variable_get(commerce_exchange_module('_username')))
-        ->setPassword(variable_get(commerce_exchange_module('_password')))
+    $exchangeConfig = new Config();
+    $exchangeConfig->setUsername($settings->getUsername())
+        ->setPassword($settings->getPassword())
         ->setZipSupport(false)
         ->setLogPath($tempDirectory . DIRECTORY_SEPARATOR . 'logs')
         ->setUploadPath($tempDirectory . DIRECTORY_SEPARATOR . 'files');
 
-    $exchange = new CommerceMLExchange($config);
-    $exchange->subscribe('parse', function (Event $event) {
+    $exchange = new CommerceMLExchange($exchangeConfig);
+    $exchange->subscribe('parse', function (Event $event) use ($settings) {
         /** @var Result $data */
         $data = $event->getData();
         $categories = $data->getGroups();
         $products = $data->getProducts();
 
-        $options = [
-            'vocabulary_machine_name' => 'category'
-        ];
-
         if (count($categories) > 0) {
-            $groupImporter = new GroupImporter($options);
+            $groupImporter = new GroupImporter($settings);
 
             $groupImporter->import($categories);
         }
 
         if (count($products) > 0) {
-            $productImporter = new ProductImporter($options);
+            $productImporter = new ProductImporter($settings);
 
             $productImporter->import($products);
         }
