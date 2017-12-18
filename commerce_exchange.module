@@ -1,6 +1,7 @@
 <?php
 
-use CommerceExchange\Category;
+use CommerceExchange\GroupImporter;
+use CommerceExchange\ProductImporter;
 use stee1cat\CommerceMLExchange\Catalog\Result;
 use stee1cat\CommerceMLExchange\CommerceMLExchange;
 use stee1cat\CommerceMLExchange\Config;
@@ -50,28 +51,12 @@ function commerce_exchange_permission() {
    ];
 }
 
-function commerce_exchange_product_new() {
-    $product = commerce_product_new('product');
-    $product->sku = 'PRODUCT-SKU3';
-    $product->title = 'Product Title';
-    $product->language = LANGUAGE_NONE;
-    $product->uid = 2;
-    $product->commerce_price[LANGUAGE_NONE][0] = [
-        'amount' => 10 * 100,
-        'currency_code' => 'USD',
-    ];
-
-    $product->field_product_tid[LANGUAGE_NONE][0]['tid'] = 1;
-
-    commerce_product_save($product);
-}
-
 function commerce_exchange() {
     @set_time_limit(0);
 
     commerce_exchange_load_classes();
 
-    $tempDirectory = drupal_realpath(variable_get(commerce_exchange_module('_file_path')));
+    $tempDirectory = drupal_realpath(variable_get(commerce_exchange_module('_file_path'), 'public://commerceml-exchange/'));
 
     $config = new Config();
     $config->setUsername(variable_get(commerce_exchange_module('_username')))
@@ -87,19 +72,21 @@ function commerce_exchange() {
         $categories = $data->getGroups();
         $products = $data->getProducts();
 
-        if (count($categories) > 0) {
-            $importer = new Category([
-                'vocabulary_machine_name' => 'd7c_commerce_categories'
-            ]);
+        $options = [
+            'vocabulary_machine_name' => 'category'
+        ];
 
-            $importer->import($categories);
+        if (count($categories) > 0) {
+            $groupImporter = new GroupImporter($options);
+
+            $groupImporter->import($categories);
         }
 
         if (count($products) > 0) {
-            // nope
-        }
+            $productImporter = new ProductImporter($options);
 
-        cache_clear_all('*', null, true);
+            $productImporter->import($products);
+        }
     });
 
     $exchange->start();

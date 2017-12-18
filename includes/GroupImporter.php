@@ -8,27 +8,9 @@ namespace CommerceExchange;
 use stee1cat\CommerceMLExchange\Model\Group;
 
 /**
- * Class Category
+ * Class GroupImporter
  */
-class Category {
-
-    const XML_ID_FIELD_NAME = 'xml_id';
-    const ENTITY_TYPE = 'taxonomy_term';
-
-    /**
-     * @var Vocabulary
-     */
-    protected $vocabulary;
-
-    /**
-     * @var array
-     */
-    protected $options = [];
-
-    public function __construct($options) {
-        $this->options = $options;
-        $this->vocabulary = Vocabulary::create(taxonomy_vocabulary_machine_name_load($options['vocabulary_machine_name']));
-    }
+class GroupImporter extends AbstractImporter {
 
     /**
      * @param $categories
@@ -36,6 +18,7 @@ class Category {
      * @throws NotUniqueCategoryException
      */
     public function import($categories) {
+        $this->beforeUpdate();
         $this->walk($categories);
     }
 
@@ -51,7 +34,7 @@ class Category {
      */
     protected function walk($categories, $parentId = null) {
         foreach ($categories as $category) {
-            if ($record = $this->findByXmlId($category->getId())) {
+            if ($record = $this->findGroupByXmlId($category->getId())) {
                 $newCategoryId = $record->tid;
 
                 $this->update([
@@ -82,8 +65,6 @@ class Category {
                     'parent' => $parentId,
                 ]);
             }
-
-            echo '<pre>', print_r($category->getName(), 1), '</pre>';
 
             $children = $category->getGroups();
             if (count($children) > 0) {
@@ -128,34 +109,10 @@ class Category {
         }
     }
 
-    /**
-     * @param string $xmlId
-     *
-     * @return boolean|\stdClass
-     * @throws NotUniqueCategoryException
-     */
-    protected function findByXmlId($xmlId) {
-        $query = new \EntityFieldQuery();
-        $result = $query->entityCondition('entity_type', self::ENTITY_TYPE)
-            ->propertyCondition('vid', $this->vocabulary->getId())
-            ->fieldCondition(self::XML_ID_FIELD_NAME, 'value', $xmlId)
-            ->execute();
-
-        if (!empty($result[self::ENTITY_TYPE])) {
-            if (count($result[self::ENTITY_TYPE]) > 1) {
-                throw new NotUniqueCategoryException();
-            }
-
-            return taxonomy_term_load(reset($result[self::ENTITY_TYPE])->tid);
-        }
-
-        return false;
-    }
-
     protected function attachXmlIdField() {
         $instance = [
             'field_name' => 'xml_id',
-            'entity_type' => self::ENTITY_TYPE,
+            'entity_type' => self::GROUP_ENTITY_TYPE,
             'bundle' => $this->vocabulary->getMachineName(),
             'label' => 'XML ID',
             'description' => '',

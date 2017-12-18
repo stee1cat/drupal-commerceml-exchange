@@ -32,5 +32,22 @@ function commerce_exchange_settings_form($form) {
         '#default_value' => variable_get(commerce_exchange_module('_file_path'), 'public://commerceml-exchange/'),
     ];
 
+    $form[commerce_exchange_module('_catalog_settings')] = [
+        '#type' => 'fieldset',
+        '#title' => t('Catalog settings'),
+    ];
+
+    $options = [];
+    foreach (node_type_get_types() as $type) {
+        $options[$type->type] = $type->name;
+    }
+
+    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_product_node_type')] = array(
+        '#type' => 'select',
+        '#title' => t('Product node type'),
+        '#default_value' => variable_get(commerce_exchange_module('_product_node_type'), 'product_display'),
+        '#options' => $options,
+    );
+
     return system_settings_form($form);
 }
