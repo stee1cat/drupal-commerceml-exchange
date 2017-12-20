@@ -22,9 +22,6 @@ class GroupImporter extends AbstractImporter {
         $this->walk($categories);
     }
 
-    protected function beforeUpdate() {
-        $this->createXmlIdField();
-    }
 
     /**
      * @param Group[] $categories
@@ -43,7 +40,7 @@ class GroupImporter extends AbstractImporter {
                     'path' => [
                         'alias' => $this->generateSlug($category, $record)
                     ],
-                    'xml_id' => [
+                    self::XML_ID_FIELD_NAME => [
                         LANGUAGE_NONE => [[
                             'value' => $category->getId(),
                         ]]
@@ -57,7 +54,7 @@ class GroupImporter extends AbstractImporter {
                     'path' => [
                         'alias' => $this->generateSlug($category)
                     ],
-                    'xml_id' => [
+                    self::XML_ID_FIELD_NAME => [
                         LANGUAGE_NONE => [[
                             'value' => $category->getId(),
                         ]]
@@ -94,37 +91,6 @@ class GroupImporter extends AbstractImporter {
         return false;
     }
 
-    protected function createXmlIdField() {
-        $field = field_info_field(self::XML_ID_FIELD_NAME);
-        if (!$field) {
-            $data = [
-                'label' => 'XML ID',
-                'field_name' => self::XML_ID_FIELD_NAME,
-                'type' => 'text',
-                'active' => 1,
-            ];
-
-            field_create_field($data);
-            $this->attachXmlIdField();
-        }
-    }
-
-    protected function attachXmlIdField() {
-        $instance = [
-            'field_name' => 'xml_id',
-            'entity_type' => self::GROUP_ENTITY_TYPE,
-            'bundle' => $this->vocabulary->getMachineName(),
-            'label' => 'XML ID',
-            'description' => '',
-            'required' => true,
-            'widget' => [
-                'type' => 'text_textfield',
-                'weight' => 0,
-            ]
-        ];
-
-        field_create_instance($instance);
-    }
 
     /**
      * @param $previous

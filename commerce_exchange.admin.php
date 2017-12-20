@@ -43,17 +43,24 @@ function commerce_exchange_settings_form($form) {
         '#title' => t('Catalog settings'),
     ];
 
+    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_product_entity_type')] = array(
+        '#type' => 'select',
+        '#title' => t('Product entity type'),
+        '#default_value' => $settings->getProductEntityType(),
+        '#options' => commerce_exchange_node_get_types(),
+    );
+
     $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_product_node_type')] = array(
         '#type' => 'select',
-        '#title' => t('Product node type'),
+        '#title' => t('Product node reference type'),
         '#default_value' => $settings->getProductNodeType(),
         '#options' => commerce_exchange_node_get_types(),
     );
 
-    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_category_name')] = array(
+    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_category_taxonomy_type')] = array(
         '#type' => 'select',
-        '#title' => t('Category name'),
-        '#default_value' => $settings->getCategoryName(),
+        '#title' => t('Catalog taxonomy type'),
+        '#default_value' => $settings->getCategoryTaxonomyType(),
         '#options' => commerce_exchange_vocabulary_get_names(),
     );
 
@@ -66,7 +73,7 @@ function commerce_exchange_settings_form($form) {
 function commerce_exchange_node_get_types() {
     $nodeTypes = [];
     foreach (node_type_get_types() as $type) {
-        $nodeTypes[$type->type] = $type->name;
+        $nodeTypes[$type->type] = sprintf('%s (%s)', $type->name, $type->type);
     }
 
     return $nodeTypes;

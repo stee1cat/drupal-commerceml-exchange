@@ -35,9 +35,15 @@ class ProductImporter extends AbstractImporter {
                             'currency_code' => 'RUB',
                         ]]
                     ],
+                    self::XML_ID_FIELD_NAME => [
+                        LANGUAGE_NONE => [[
+                            'bundle' => $this->settings->getProductEntityType(),
+                            'value' => $product->getId(),
+                        ]]
+                    ],
                     'field_product_category' => [
                         LANGUAGE_NONE => [[
-                            'bundle' => $this->settings->getProductNodeType(),
+                            'bundle' => $this->settings->getProductEntityType(),
                             'tid' => $parents[0]->tid
                         ]]
                     ],
@@ -53,24 +59,22 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     protected function update($fields) {
-        $product = commerce_product_new($this->settings->getProductNodeType());
+        $product = commerce_product_new($this->settings->getProductEntityType());
+        $node = (object) ['type' => $this->settings->getProductNodeType()];
+        node_object_prepare($node);
 
         foreach ($fields as $field => $value) {
-            if (in_array($field, ['sku', 'title', 'language', 'uid', 'field_product_category', 'commerce_price'])) {
+            if (!in_array($field, ['type'])) {
                 $product->{$field} = $value;
+            }
+
+            if (in_array($field, ['title', 'language', 'uid', 'field_product_category'])) {
+                $node->{$field} = $value;
             }
         }
 
         commerce_product_save($product);
-
-        $node = (object) ['type' => $this->settings->getProductNodeType()];
-        node_object_prepare($node);
-        $node->title = $product->title;
-        $node->uid = 1;
         $node->field_product[LANGUAGE_NONE][0]['product_id'] = $product->product_id;
-        $node->field_product_category = $product->field_product_category;
-        $node->language = LANGUAGE_NONE;
-
         node_save($node);
 
         return $product->product_id;

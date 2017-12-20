@@ -13,6 +13,7 @@ abstract class AbstractImporter {
 
     const XML_ID_FIELD_NAME = 'xml_id';
     const GROUP_ENTITY_TYPE = 'taxonomy_term';
+    const PRODUCT_ENTITY_TYPE = 'commerce_product';
 
     /**
      * @var Vocabulary
@@ -27,6 +28,10 @@ abstract class AbstractImporter {
     public function __construct(Settings $settings) {
         $this->settings = $settings;
         $this->createVocabulary();
+    }
+
+    protected function beforeUpdate() {
+        $this->createXmlIdField();
     }
 
     /**
@@ -54,9 +59,52 @@ abstract class AbstractImporter {
     }
 
     protected function createVocabulary() {
-        $fields = taxonomy_vocabulary_machine_name_load($this->settings->getCategoryName());
+        $fields = taxonomy_vocabulary_machine_name_load($this->settings->getCategoryTaxonomyType());
 
         $this->vocabulary = Vocabulary::create($fields);
+    }
+
+    protected function createXmlIdField() {
+        $field = field_info_field(self::XML_ID_FIELD_NAME);
+        if (!$field) {
+            $data = [
+                'label' => 'XML ID',
+                'field_name' => self::XML_ID_FIELD_NAME,
+                'type' => 'text',
+                'active' => 1,
+            ];
+
+            field_create_field($data);
+            $this->attachXmlIdField();
+        }
+    }
+
+    protected function attachXmlIdField() {
+        field_create_instance([
+            'field_name' => self::XML_ID_FIELD_NAME,
+            'entity_type' => self::GROUP_ENTITY_TYPE,
+            'bundle' => $this->vocabulary->getMachineName(),
+            'label' => 'XML ID',
+            'description' => '',
+            'required' => true,
+            'widget' => [
+                'type' => 'text_textfield',
+                'weight' => 0,
+            ]
+        ]);
+
+        field_create_instance([
+            'field_name' => self::XML_ID_FIELD_NAME,
+            'entity_type' => self::PRODUCT_ENTITY_TYPE,
+            'bundle' => $this->settings->getProductEntityType(),
+            'label' => 'XML ID',
+            'description' => '',
+            'required' => true,
+            'widget' => [
+                'type' => 'text_textfield',
+                'weight' => 0,
+            ]
+        ]);
     }
 
 }
