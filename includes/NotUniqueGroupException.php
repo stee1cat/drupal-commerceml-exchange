@@ -6,6 +6,7 @@
 namespace CommerceExchange;
 
 /**
- * Class NotUniqueCategoryException
+ * Class NotUniqueGroupException
+ * @package CommerceExchange
  */
-class NotUniqueCategoryException extends \Exception {}
+class NotUniqueGroupException extends \Exception {}

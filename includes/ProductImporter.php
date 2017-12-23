@@ -16,49 +16,56 @@ class ProductImporter extends AbstractImporter {
     /**
      * @param Product[] $products
      *
-     * @throws NotUniqueCategoryException
+     * @throws NotUniqueGroupException
      * @throws \Exception
      */
     public function import($products) {
         foreach ($products as $product) {
             $parents = $this->findParentGroups($product);
 
-            if ($product->getVendorCode()) {
-                $this->update([
-                    'sku' => $product->getVendorCode(),
-                    'title' => $product->getName(),
-                    'language' => LANGUAGE_NONE,
-                    'uid' => 1,
-                    'commerce_price' => [
-                        LANGUAGE_NONE => [[
-                            'amount' => 0,
-                            'currency_code' => 'RUB',
-                        ]]
-                    ],
-                    self::XML_ID_FIELD_NAME => [
-                        LANGUAGE_NONE => [[
-                            'bundle' => $this->settings->getProductEntityType(),
-                            'value' => $product->getId(),
-                        ]]
-                    ],
-                    'field_product_category' => [
-                        LANGUAGE_NONE => [[
-                            'bundle' => $this->settings->getProductEntityType(),
-                            'tid' => $parents[0]->tid
-                        ]]
-                    ],
-                ]);
+            $fields = [
+                'sku' => $product->getVendorCode(),
+                'title' => $product->getName(),
+                'language' => LANGUAGE_NONE,
+                'uid' => 1,
+                'commerce_price' => [
+                    LANGUAGE_NONE => [[
+                        'amount' => 0,
+                        'currency_code' => 'RUB',
+                    ]]
+                ],
+                self::XML_ID_FIELD_NAME => [
+                    LANGUAGE_NONE => [[
+                        'bundle' => $this->settings->getProductEntityType(),
+                        'value' => $product->getId(),
+                    ]]
+                ],
+                'field_product_category' => [
+                    LANGUAGE_NONE => [[
+                        'bundle' => $this->settings->getProductEntityType(),
+                        'tid' => $parents[0]->tid
+                    ]]
+                ],
+            ];
+
+            if ($record = $this->findProductByXmlId($product->getId())) {
+                $this->update($record, $fields);
+            }
+            else {
+                if ($product->getVendorCode()) {
+                    $this->create($fields);
+                }
             }
         }
     }
 
     /**
-     * @param $fields
+     * @param array $fields
      *
      * @return mixed
      * @throws \Exception
      */
-    protected function update($fields) {
+    protected function create($fields) {
         $product = commerce_product_new($this->settings->getProductEntityType());
         $node = (object) ['type' => $this->settings->getProductNodeType()];
         node_object_prepare($node);
@@ -81,10 +88,34 @@ class ProductImporter extends AbstractImporter {
     }
 
     /**
+     * @param \stdClass $product
+     * @param array $fields
+     *
+     * @throws NotUniqueNodeException
+     * @throws \Exception
+     */
+    protected function update($product, $fields) {
+        $node = $this->findNodeByProductId($product->product_id);
+
+        foreach ($fields as $field => $value) {
+            if (!in_array($field, ['type'])) {
+                $product->{$field} = $value;
+            }
+
+            if (in_array($field, ['title', 'language', 'uid', 'field_product_category'])) {
+                $node->{$field} = $value;
+            }
+        }
+
+        node_save($node);
+        commerce_product_save($product);
+    }
+
+    /**
      * @param Product $product
      *
      * @return array
-     * @throws NotUniqueCategoryException
+     * @throws NotUniqueGroupException
      */
     protected function findParentGroups(Product $product) {
         $result = [];

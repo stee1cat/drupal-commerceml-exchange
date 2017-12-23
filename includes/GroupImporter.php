@@ -15,7 +15,8 @@ class GroupImporter extends AbstractImporter {
     /**
      * @param $categories
      *
-     * @throws NotUniqueCategoryException
+     * @throws NotUniqueGroupException
+     * @throws \FieldException
      */
     public function import($categories) {
         $this->beforeUpdate();
@@ -27,40 +28,35 @@ class GroupImporter extends AbstractImporter {
      * @param Group[] $categories
      * @param null|integer $parentId
      *
-     * @throws NotUniqueCategoryException
+     * @throws NotUniqueGroupException
      */
     protected function walk($categories, $parentId = null) {
         foreach ($categories as $category) {
+            $fields = [
+                'name' => $category->getName(),
+                'path' => [
+                    'alias' => $this->generateSlug($category)
+                ],
+                self::XML_ID_FIELD_NAME => [
+                    LANGUAGE_NONE => [[
+                        'value' => $category->getId(),
+                    ]]
+                ],
+                'parent' => $parentId,
+            ];
+
             if ($record = $this->findGroupByXmlId($category->getId())) {
                 $newCategoryId = $record->tid;
 
-                $this->update([
+                $this->update(array_merge($fields, [
                     'tid' => $record->tid,
-                    'name' => $category->getName(),
                     'path' => [
                         'alias' => $this->generateSlug($category, $record)
                     ],
-                    self::XML_ID_FIELD_NAME => [
-                        LANGUAGE_NONE => [[
-                            'value' => $category->getId(),
-                        ]]
-                    ],
-                    'parent' => $parentId,
-                ]);
+                ]));
             }
             else {
-                $newCategoryId = $this->update([
-                    'name' => $category->getName(),
-                    'path' => [
-                        'alias' => $this->generateSlug($category)
-                    ],
-                    self::XML_ID_FIELD_NAME => [
-                        LANGUAGE_NONE => [[
-                            'value' => $category->getId(),
-                        ]]
-                    ],
-                    'parent' => $parentId,
-                ]);
+                $newCategoryId = $this->update($fields);
             }
 
             $children = $category->getGroups();
