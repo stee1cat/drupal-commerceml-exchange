@@ -1,12 +1,12 @@
 <?php
+/**
+ * Copyright (c) 2017 Gennadiy Khatuntsev <e.steelcat@gmail.com>
+ */
 
-use CommerceExchange\GroupImporter;
-use CommerceExchange\ProductImporter;
+use CommerceExchange\EventHandler;
 use CommerceExchange\Settings;
-use stee1cat\CommerceMLExchange\Catalog\Result;
 use stee1cat\CommerceMLExchange\CommerceMLExchange;
 use stee1cat\CommerceMLExchange\Config;
-use stee1cat\CommerceMLExchange\Event\Event;
 
 require 'vendor/autoload.php';
 
@@ -67,25 +67,15 @@ function commerce_exchange() {
         ->setLogPath($tempDirectory . DIRECTORY_SEPARATOR . 'logs')
         ->setUploadPath($tempDirectory . DIRECTORY_SEPARATOR . 'files');
 
-    $exchange = new CommerceMLExchange($exchangeConfig);
-    $exchange->subscribe('parse', function (Event $event) use ($settings) {
-        /** @var Result $data */
-        $data = $event->getData();
-        $categories = $data->getGroups();
-        $products = $data->getProducts();
+    try {
+        $eventHandler = new EventHandler($settings);
 
-        if (count($categories) > 0) {
-            $groupImporter = new GroupImporter($settings);
-
-            $groupImporter->import($categories);
-        }
-
-        if (count($products) > 0) {
-            $productImporter = new ProductImporter($settings);
-
-            $productImporter->import($products);
-        }
-    });
+        $exchange = new CommerceMLExchange($exchangeConfig);
+        $exchange->subscribe('parse', [$eventHandler, 'onParse']);
+    }
+    catch (\Exception $e) {
+        watchdog_exception(WATCHDOG_CRITICAL, $e);
+    }
 
     $exchange->start();
 
