@@ -24,7 +24,6 @@ class ProductImporter extends AbstractImporter {
             $parents = $this->findParentGroups($product);
 
             $fields = [
-                'sku' => $product->getVendorCode(),
                 'title' => $product->getName(),
                 'language' => LANGUAGE_NONE,
                 'uid' => 1,
@@ -52,9 +51,9 @@ class ProductImporter extends AbstractImporter {
                 $this->update($record, $fields);
             }
             else {
-                if ($product->getVendorCode()) {
-                    $this->create($fields);
-                }
+                $fields['sku'] = (new SkuGenerator($product))->generate();
+
+                $this->create($fields);
             }
         }
     }
@@ -62,7 +61,7 @@ class ProductImporter extends AbstractImporter {
     /**
      * @param array $fields
      *
-     * @return mixed
+     * @return integer
      * @throws \Exception
      */
     protected function create($fields) {
@@ -98,7 +97,7 @@ class ProductImporter extends AbstractImporter {
         $node = $this->findNodeByProductId($product->product_id);
 
         foreach ($fields as $field => $value) {
-            if (!in_array($field, ['type'])) {
+            if (!in_array($field, ['type', 'sku'])) {
                 $product->{$field} = $value;
             }
 
