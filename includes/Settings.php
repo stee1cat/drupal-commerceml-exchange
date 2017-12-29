@@ -35,4 +35,8 @@ class Settings {
         return variable_get(commerce_exchange_module('_category_taxonomy_type'), 'category');
     }
 
+    public function getPriceType() {
+        return variable_get(commerce_exchange_module('_price_type'), '');
+    }
+
 }

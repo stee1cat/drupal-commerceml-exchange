@@ -64,6 +64,12 @@ function commerce_exchange_settings_form($form) {
         '#options' => commerce_exchange_vocabulary_get_names(),
     );
 
+    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_price_type')] = [
+        '#type' => 'textfield',
+        '#title' => t('Price type'),
+        '#default_value' => $settings->getPriceType(),
+    ];
+
     return system_settings_form($form);
 }
 

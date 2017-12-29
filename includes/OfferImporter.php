@@ -28,11 +28,14 @@ class OfferImporter extends AbstractImporter {
      * @throws NotUniqueProductException
      */
     protected function walk($offers) {
+        $priceType = $this->settings->getPriceType();
+
         foreach ($offers as $offer) {
             $product = $this->findProductByXmlId($offer->getProductId());
+            $prices = $offer->getPrices();
 
-            if ($product && $offer->getPrices()) {
-                $price = new PriceDecorator($offer->getPrices()[0]);
+            if ($product && $prices && isset($prices[$priceType])) {
+                $price = new PriceDecorator($prices[$priceType]);
 
                 $product->commerce_price = [
                     LANGUAGE_NONE => [[
@@ -42,6 +45,9 @@ class OfferImporter extends AbstractImporter {
                 ];
 
                 commerce_product_save($product);
+            }
+            else if ($product) {
+                watchdog(WATCHDOG_NOTICE, sprintf('Price not found for product "%s"', $product->title));
             }
         }
     }
