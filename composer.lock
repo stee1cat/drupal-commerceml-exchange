@@ -360,12 +360,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/stee1cat/commerceml-exchange.git",
-                "reference": "a02eea052919239a5e9ab821f3ebf5608828a982"
+                "reference": "d6f05dae9f6f82b77a90b8597653bb12cdafefbd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stee1cat/commerceml-exchange/zipball/a02eea052919239a5e9ab821f3ebf5608828a982",
-                "reference": "a02eea052919239a5e9ab821f3ebf5608828a982",
+                "url": "https://api.github.com/repos/stee1cat/commerceml-exchange/zipball/d6f05dae9f6f82b77a90b8597653bb12cdafefbd",
+                "reference": "d6f05dae9f6f82b77a90b8597653bb12cdafefbd",
                 "shasum": ""
             },
             "require": {
@@ -396,7 +396,7 @@
                 "source": "https://github.com/stee1cat/commerceml-exchange/tree/master",
                 "issues": "https://github.com/stee1cat/commerceml-exchange/issues"
             },
-            "time": "2017-12-26 03:50:40"
+            "time": "2017-12-31 07:20:15"
         }
     ],
     "packages-dev": [],

@@ -47,7 +47,7 @@ class OfferImporter extends AbstractImporter {
                 commerce_product_save($product);
             }
             else if ($product) {
-                watchdog(WATCHDOG_NOTICE, sprintf('Price not found for product "%s"', $product->title));
+                Logger::notice(sprintf('Price not found for product "%s"', $product->title));
             }
         }
     }

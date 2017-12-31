@@ -4,6 +4,7 @@
  */
 
 use CommerceExchange\EventHandler;
+use CommerceExchange\Logger;
 use CommerceExchange\Settings;
 use stee1cat\CommerceMLExchange\CommerceMLExchange;
 use stee1cat\CommerceMLExchange\Config;
@@ -74,7 +75,7 @@ function commerce_exchange() {
         $exchange->subscribe('parse', [$eventHandler, 'onParse']);
     }
     catch (\Exception $e) {
-        watchdog_exception(WATCHDOG_CRITICAL, $e);
+        Logger::exception($e);
     }
 
     $exchange->start();
