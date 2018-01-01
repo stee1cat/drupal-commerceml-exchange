@@ -20,6 +20,8 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     public function import($products) {
+        $settings = $this->settings;
+
         foreach ($products as $product) {
             $parents = $this->findParentGroups($product);
 
@@ -35,19 +37,19 @@ class ProductImporter extends AbstractImporter {
                 ],
                 self::XML_ID_FIELD_NAME => [
                     LANGUAGE_NONE => [[
-                        'bundle' => $this->settings->getProductEntityType(),
+                        'bundle' => $settings->getProductEntityType(),
                         'value' => $product->getId(),
                     ]]
                 ],
-                'field_product_category' => [
+                $settings->getCategoryReferenceField() => [
                     LANGUAGE_NONE => [[
-                        'bundle' => $this->settings->getProductEntityType(),
+                        'bundle' => $settings->getProductEntityType(),
                         'tid' => $parents[0]->tid
                     ]]
                 ],
                 'body' => [
                     LANGUAGE_NONE => [[
-                        'bundle' => $this->settings->getProductEntityType(),
+                        'bundle' => $settings->getProductEntityType(),
                         'value' => $product->getDescription(),
                     ]]
                 ],
@@ -71,22 +73,22 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     protected function create($fields) {
-        $product = commerce_product_new($this->settings->getProductEntityType());
-        $node = (object) ['type' => $this->settings->getProductNodeType()];
-        node_object_prepare($node);
+        $settings = $this->settings;
+        $product = commerce_product_new($settings->getProductEntityType());
+        $node = $this->createNode();
 
         foreach ($fields as $field => $value) {
             if (!in_array($field, ['type', 'body'])) {
                 $product->{$field} = $value;
             }
 
-            if (in_array($field, ['title', 'language', 'uid', 'field_product_category', 'body'])) {
+            if (in_array($field, ['title', 'language', 'uid', $settings->getCategoryReferenceField(), 'body'])) {
                 $node->{$field} = $value;
             }
         }
 
         commerce_product_save($product);
-        $node->field_product[LANGUAGE_NONE][0]['product_id'] = $product->product_id;
+        $node->{$settings->getProductReferenceField()}[LANGUAGE_NONE][0]['product_id'] = $product->product_id;
         node_save($node);
 
         return $product->product_id;
@@ -100,6 +102,7 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     protected function update($product, $fields) {
+        $nodeFields = ['title', 'language', 'uid', $this->settings->getCategoryReferenceField(), 'body'];
         $node = $this->findNodeByProductId($product->product_id);
 
         foreach ($fields as $field => $value) {
@@ -107,7 +110,7 @@ class ProductImporter extends AbstractImporter {
                 $product->{$field} = $value;
             }
 
-            if (in_array($field, ['title', 'language', 'uid', 'field_product_category', 'body'])) {
+            if (in_array($field, $nodeFields)) {
                 $node->{$field} = $value;
             }
         }
@@ -133,6 +136,18 @@ class ProductImporter extends AbstractImporter {
         }
 
         return $result;
+    }
+
+    /**
+     * @return object
+     */
+    protected function createNode() {
+        $node = (object) [
+            'type' => $this->settings->getProductNodeType(),
+        ];
+        node_object_prepare($node);
+
+        return $node;
     }
 
 }

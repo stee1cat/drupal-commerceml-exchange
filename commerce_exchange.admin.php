@@ -5,6 +5,11 @@
 
 use CommerceExchange\Settings;
 
+/**
+ * @param array $form
+ *
+ * @return array
+ */
 function commerce_exchange_settings_form($form) {
     commerce_exchange_load_classes();
 
@@ -38,33 +43,50 @@ function commerce_exchange_settings_form($form) {
         '#default_value' => $settings->getFilePath(),
     ];
 
-    $form[commerce_exchange_module('_catalog_settings')] = [
+    $nodeTypes = commerce_exchange_node_get_types();
+    $catalogGroup = commerce_exchange_module('_catalog_settings');
+
+    $form[$catalogGroup] = [
         '#type' => 'fieldset',
         '#title' => t('Catalog settings'),
     ];
 
-    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_product_entity_type')] = array(
+    $form[$catalogGroup][commerce_exchange_module('_product_entity_type')] = [
         '#type' => 'select',
         '#title' => t('Product entity type'),
         '#default_value' => $settings->getProductEntityType(),
-        '#options' => commerce_exchange_node_get_types(),
-    );
+        '#options' => $nodeTypes,
+    ];
 
-    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_product_node_type')] = array(
+    $form[$catalogGroup][commerce_exchange_module('_product_node_type')] = [
         '#type' => 'select',
         '#title' => t('Product node reference type'),
         '#default_value' => $settings->getProductNodeType(),
-        '#options' => commerce_exchange_node_get_types(),
-    );
+        '#options' => $nodeTypes,
+    ];
 
-    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_category_taxonomy_type')] = array(
+    $form[$catalogGroup][commerce_exchange_module('_product_reference_field')] = [
         '#type' => 'select',
-        '#title' => t('Catalog taxonomy type'),
+        '#title' => t('Product node reference field'),
+        '#default_value' => $settings->getProductReferenceField(),
+        '#options' => commerce_exchange_product_reference_fields(),
+    ];
+
+    $form[$catalogGroup][commerce_exchange_module('_category_taxonomy_type')] = [
+        '#type' => 'select',
+        '#title' => t('Catalog category type'),
         '#default_value' => $settings->getCategoryTaxonomyType(),
         '#options' => commerce_exchange_vocabulary_get_names(),
-    );
+    ];
 
-    $form[commerce_exchange_module('_catalog_settings')][commerce_exchange_module('_price_type')] = [
+    $form[$catalogGroup][commerce_exchange_module('_category_reference_field')] = [
+        '#type' => 'select',
+        '#title' => t('Category reference field'),
+        '#default_value' => $settings->getCategoryReferenceField(),
+        '#options' => commerce_exchange_category_reference_fields(),
+    ];
+
+    $form[$catalogGroup][commerce_exchange_module('_price_type')] = [
         '#type' => 'textfield',
         '#title' => t('Price type'),
         '#default_value' => $settings->getPriceType(),
@@ -83,6 +105,38 @@ function commerce_exchange_node_get_types() {
     }
 
     return $nodeTypes;
+}
+
+/**
+ * @return string[]
+ */
+function commerce_exchange_category_reference_fields() {
+    return commerce_exchange_get_fields_by_type('taxonomy_term_reference');
+}
+
+/**
+ * @return string[]
+ */
+function commerce_exchange_product_reference_fields() {
+    return commerce_exchange_get_fields_by_type('commerce_product_reference');
+}
+
+/**
+ * @param string $type
+ *
+ * @return string[]
+ */
+function commerce_exchange_get_fields_by_type($type) {
+    $result = [];
+    $fields = field_info_fields();
+
+    foreach ($fields as $name => $field) {
+        if ($type && $field['type'] === $type && $field['active'] == 1) {
+            $result[$name] = $name;
+        }
+    }
+
+    return $result;
 }
 
 /**

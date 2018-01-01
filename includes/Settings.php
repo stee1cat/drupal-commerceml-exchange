@@ -35,6 +35,14 @@ class Settings {
         return variable_get(commerce_exchange_module('_category_taxonomy_type'), 'category');
     }
 
+    public function getCategoryReferenceField() {
+        return variable_get(commerce_exchange_module('_category_reference_field'), 'field_product_category');
+    }
+
+    public function getProductReferenceField() {
+        return variable_get(commerce_exchange_module('_product_reference_field'), 'field_product');
+    }
+
     public function getPriceType() {
         return variable_get(commerce_exchange_module('_price_type'), '');
     }
