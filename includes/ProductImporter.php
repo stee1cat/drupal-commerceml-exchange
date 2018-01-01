@@ -45,6 +45,12 @@ class ProductImporter extends AbstractImporter {
                         'tid' => $parents[0]->tid
                     ]]
                 ],
+                'body' => [
+                    LANGUAGE_NONE => [[
+                        'bundle' => $this->settings->getProductEntityType(),
+                        'value' => $product->getDescription(),
+                    ]]
+                ],
             ];
 
             if ($record = $this->findProductByXmlId($product->getId())) {
@@ -70,11 +76,11 @@ class ProductImporter extends AbstractImporter {
         node_object_prepare($node);
 
         foreach ($fields as $field => $value) {
-            if (!in_array($field, ['type'])) {
+            if (!in_array($field, ['type', 'body'])) {
                 $product->{$field} = $value;
             }
 
-            if (in_array($field, ['title', 'language', 'uid', 'field_product_category'])) {
+            if (in_array($field, ['title', 'language', 'uid', 'field_product_category', 'body'])) {
                 $node->{$field} = $value;
             }
         }
@@ -97,11 +103,11 @@ class ProductImporter extends AbstractImporter {
         $node = $this->findNodeByProductId($product->product_id);
 
         foreach ($fields as $field => $value) {
-            if (!in_array($field, ['type', 'sku'])) {
+            if (!in_array($field, ['type', 'sku', 'body'])) {
                 $product->{$field} = $value;
             }
 
-            if (in_array($field, ['title', 'language', 'uid', 'field_product_category'])) {
+            if (in_array($field, ['title', 'language', 'uid', 'field_product_category', 'body'])) {
                 $node->{$field} = $value;
             }
         }
