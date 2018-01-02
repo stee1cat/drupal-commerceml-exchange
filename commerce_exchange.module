@@ -40,6 +40,12 @@ function commerce_exchange_menu() {
         'file' => commerce_exchange_module() . '.admin.php',
     ];
 
+    $items['admin/commerce/config/commerce-exchange/batch-import'] = [
+        'title' => '1C Exchange settings',
+        'page callback' => 'commerce_exchange_batch_import',
+        'access arguments' => ['configure ' . commerce_exchange_module()],
+    ];
+
     return $items;
 }
 
@@ -79,6 +85,12 @@ function commerce_exchange() {
     }
 
     $exchange->start();
+
+    drupal_exit();
+}
+
+function commerce_exchange_batch_import() {
+    echo 'batch';
 
     drupal_exit();
 }

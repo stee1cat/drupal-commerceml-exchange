@@ -29,6 +29,7 @@ class ProductImporter extends AbstractImporter {
                 'title' => $product->getName(),
                 'language' => LANGUAGE_NONE,
                 'uid' => 1,
+                'status' => $product->isMarkAsDelete() ? 0 : 1,
                 'commerce_price' => [
                     LANGUAGE_NONE => [[
                         'amount' => 0,
@@ -102,7 +103,7 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     protected function update($product, $fields) {
-        $nodeFields = ['title', 'language', 'uid', $this->settings->getCategoryReferenceField(), 'body'];
+        $nodeFields = ['title', 'language', 'uid', $this->settings->getCategoryReferenceField(), 'body', 'status'];
         $node = $this->findNodeByProductId($product->product_id);
 
         foreach ($fields as $field => $value) {
