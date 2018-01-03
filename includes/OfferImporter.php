@@ -41,13 +41,15 @@ class OfferImporter extends AbstractImporter {
                     LANGUAGE_NONE => [[
                         'amount' => $price->getValue(),
                         'currency_code' => $price->getCurrency(),
-                    ]]
+                    ]],
                 ];
 
                 commerce_product_save($product);
             }
             else if ($product) {
-                Logger::notice(sprintf('Price not found for product "%s"', $product->title));
+                Logger::notice('Price not found for product "%title"', [
+                    '%title' => $product->title,
+                ]);
             }
         }
     }

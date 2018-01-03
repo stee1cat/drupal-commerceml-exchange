@@ -6,6 +6,7 @@
 use CommerceExchange\EventHandler;
 use CommerceExchange\Logger;
 use CommerceExchange\Settings;
+use stee1cat\CommerceMLExchange\Catalog\ImportService;
 use stee1cat\CommerceMLExchange\CommerceMLExchange;
 use stee1cat\CommerceMLExchange\Config;
 
@@ -59,38 +60,72 @@ function commerce_exchange_permission() {
    ];
 }
 
-function commerce_exchange() {
-    @set_time_limit(0);
-
-    commerce_exchange_load_classes();
-
-    $settings = new Settings();
+/**
+ * @param Settings $settings
+ *
+ * @return Config
+ */
+function commerce_exchange_create_config(Settings $settings) {
     $tempDirectory = drupal_realpath($settings->getFilePath());
 
-    $exchangeConfig = new Config();
-    $exchangeConfig->setUsername($settings->getUsername())
+    return (new Config())
+        ->setUsername($settings->getUsername())
         ->setPassword($settings->getPassword())
         ->setZipSupport(false)
         ->setLogPath($tempDirectory . DIRECTORY_SEPARATOR . 'logs')
         ->setUploadPath($tempDirectory . DIRECTORY_SEPARATOR . 'files');
+}
+
+function commerce_exchange() {
+    @set_time_limit(0);
+    commerce_exchange_load_classes();
+
+    $settings = new Settings();
+    $exchangeConfig = commerce_exchange_create_config($settings);
 
     try {
         $eventHandler = new EventHandler($settings);
 
         $exchange = new CommerceMLExchange($exchangeConfig);
         $exchange->subscribe('parse', [$eventHandler, 'onParse']);
+        $exchange->start();
     }
     catch (\Exception $e) {
         Logger::exception($e);
     }
 
-    $exchange->start();
-
     drupal_exit();
 }
 
 function commerce_exchange_batch_import() {
-    echo 'batch';
+    @set_time_limit(0);
+    commerce_exchange_load_classes();
+
+    $settings = new Settings();
+    $exchangeConfig = commerce_exchange_create_config($settings);
+    $pattern = $exchangeConfig->getUploadPath() . DIRECTORY_SEPARATOR . '*.xml';
+
+    try {
+        $eventHandler = new EventHandler($settings);
+
+        $exchange = new CommerceMLExchange($exchangeConfig);
+        $exchange->subscribe('parse', [$eventHandler, 'onParse']);
+
+        /** @var ImportService $importService */
+        $importService = $exchange->getContainer()
+            ->get(ImportService::class);
+
+        foreach (glob($pattern) as $file) {
+            $importService->import($file);
+
+            Logger::info('File "%filename" imported', [
+                '%filename' => basename($file),
+            ]);
+        }
+    }
+    catch (\Exception $e) {
+        Logger::exception($e);
+    }
 
     drupal_exit();
 }

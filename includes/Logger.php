@@ -11,12 +11,18 @@ namespace CommerceExchange;
  */
 class Logger {
 
-    public static function notice($message) {
-        watchdog(WATCHDOG_NOTICE, $message);
+    const TAG = 'commerce_exchange';
+
+    public static function info($message, $variables = []) {
+        watchdog(self::TAG, $message, $variables, WATCHDOG_INFO);
+    }
+
+    public static function notice($message, $variables = []) {
+        watchdog(self::TAG, $message, $variables, WATCHDOG_NOTICE);
     }
 
     public static function exception(\Exception $exception) {
-        watchdog_exception(WATCHDOG_CRITICAL, $exception);
+        watchdog_exception(self::TAG, $exception);
     }
 
 }
