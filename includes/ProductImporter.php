@@ -56,6 +56,11 @@ class ProductImporter extends AbstractImporter {
                 ],
             ];
 
+            $this->invoke('before_import_product', new Event([
+                'fields' => &$fields,
+                'product' => $product,
+            ]));
+
             if ($record = $this->findProductByXmlId($product->getId())) {
                 $this->update($record, $fields);
             }

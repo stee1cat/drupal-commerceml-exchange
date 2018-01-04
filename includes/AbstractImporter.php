@@ -175,4 +175,20 @@ abstract class AbstractImporter {
         ]));
     }
 
+    /**
+     * @param string $hook
+     * @param Event $event
+     */
+    protected function invoke($hook, &$event) {
+        if (!$event) {
+            $event = new Event();
+        }
+
+        foreach (module_implements($hook) as $module) {
+            $function = $module . '_' . $hook;
+
+            call_user_func($function, $event);
+        }
+    }
+
 }
