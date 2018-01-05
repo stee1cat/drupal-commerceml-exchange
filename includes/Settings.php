@@ -47,4 +47,8 @@ class Settings {
         return variable_get(commerce_exchange_module('_price_type'), '');
     }
 
+    public function isGenerateSku() {
+        return variable_get(commerce_exchange_module('_generate_sku'), false);
+    }
+
 }

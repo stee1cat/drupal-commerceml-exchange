@@ -72,6 +72,12 @@ function commerce_exchange_settings_form($form) {
         '#options' => commerce_exchange_product_reference_fields(),
     ];
 
+    $form[$catalogGroup][commerce_exchange_module('_generate_sku')] = [
+        '#type' => 'checkbox',
+        '#title' => t('Generate SKU'),
+        '#default_value' => $settings->isGenerateSku(),
+    ];
+
     $form[$catalogGroup][commerce_exchange_module('_category_taxonomy_type')] = [
         '#type' => 'select',
         '#title' => t('Catalog category type'),

@@ -65,7 +65,9 @@ class ProductImporter extends AbstractImporter {
                 $this->update($record, $fields);
             }
             else {
-                $fields['sku'] = (new SkuGenerator($product))->generate();
+                if ($settings->isGenerateSku()) {
+                    $fields['sku'] = (new SkuGenerator($product))->generate();
+                }
 
                 $this->create($fields);
             }
