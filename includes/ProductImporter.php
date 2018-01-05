@@ -56,7 +56,7 @@ class ProductImporter extends AbstractImporter {
                 ],
             ];
 
-            $this->invoke('before_import_product', new Event([
+            $this->invoke(Hooks::BEFORE_IMPORT_PRODUCT, new Event([
                 'fields' => &$fields,
                 'product' => $product,
             ]));

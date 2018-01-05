@@ -9,6 +9,7 @@ use CommerceExchange\Settings;
 use stee1cat\CommerceMLExchange\Catalog\ImportService;
 use stee1cat\CommerceMLExchange\CommerceMLExchange;
 use stee1cat\CommerceMLExchange\Config;
+use stee1cat\CommerceMLExchange\Event\Events;
 
 require 'vendor/autoload.php';
 
@@ -87,7 +88,7 @@ function commerce_exchange() {
         $eventHandler = new EventHandler($settings);
 
         $exchange = new CommerceMLExchange($exchangeConfig);
-        $exchange->subscribe('parse', [$eventHandler, 'onParse']);
+        $exchange->subscribe(Events::ON_AFTER_PARSE, [$eventHandler, 'onAfterParse']);
         $exchange->start();
     }
     catch (\Exception $e) {
@@ -109,7 +110,7 @@ function commerce_exchange_batch_import() {
         $eventHandler = new EventHandler($settings);
 
         $exchange = new CommerceMLExchange($exchangeConfig);
-        $exchange->subscribe('parse', [$eventHandler, 'onParse']);
+        $exchange->subscribe(Events::ON_AFTER_PARSE, [$eventHandler, 'onAfterParse']);
 
         /** @var ImportService $importService */
         $importService = $exchange->getContainer()
