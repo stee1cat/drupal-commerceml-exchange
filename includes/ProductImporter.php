@@ -25,51 +25,58 @@ class ProductImporter extends AbstractImporter {
         foreach ($products as $product) {
             $parents = $this->findParentGroups($product);
 
-            $fields = [
-                'title' => $product->getName(),
-                'language' => LANGUAGE_NONE,
-                'uid' => 1,
-                'status' => $product->isMarkAsDelete() ? 0 : 1,
-                'commerce_price' => [
-                    LANGUAGE_NONE => [[
-                        'amount' => 0,
-                        'currency_code' => 'RUB',
-                    ]]
-                ],
-                self::XML_ID_FIELD_NAME => [
-                    LANGUAGE_NONE => [[
-                        'bundle' => $settings->getProductEntityType(),
-                        'value' => $product->getId(),
-                    ]]
-                ],
-                $settings->getCategoryReferenceField() => [
-                    LANGUAGE_NONE => [[
-                        'bundle' => $settings->getProductEntityType(),
-                        'tid' => $parents[0]->tid
-                    ]]
-                ],
-                'body' => [
-                    LANGUAGE_NONE => [[
-                        'bundle' => $settings->getProductEntityType(),
-                        'value' => $product->getDescription(),
-                    ]]
-                ],
-            ];
+            if (count($parents) > 0) {
+                $fields = [
+                    'title' => $product->getName(),
+                    'language' => LANGUAGE_NONE,
+                    'uid' => 1,
+                    'status' => $product->isMarkAsDelete() ? 0 : 1,
+                    'commerce_price' => [
+                        LANGUAGE_NONE => [[
+                            'amount' => 0,
+                            'currency_code' => 'RUB',
+                        ]]
+                    ],
+                    self::XML_ID_FIELD_NAME => [
+                        LANGUAGE_NONE => [[
+                            'bundle' => $settings->getProductEntityType(),
+                            'value' => $product->getId(),
+                        ]]
+                    ],
+                    $settings->getCategoryReferenceField() => [
+                        LANGUAGE_NONE => [[
+                            'bundle' => $settings->getProductEntityType(),
+                            'tid' => $parents[0]->tid
+                        ]]
+                    ],
+                    'body' => [
+                        LANGUAGE_NONE => [[
+                            'bundle' => $settings->getProductEntityType(),
+                            'value' => $product->getDescription(),
+                        ]]
+                    ],
+                ];
 
-            $this->invoke(Hooks::BEFORE_IMPORT_PRODUCT, new Event([
-                'fields' => &$fields,
-                'product' => $product,
-            ]));
+                $this->invoke(Hooks::BEFORE_IMPORT_PRODUCT, new Event([
+                    'fields' => &$fields,
+                    'product' => $product,
+                ]));
 
-            if ($record = $this->findProductByXmlId($product->getId())) {
-                $this->update($record, $fields);
+                if ($record = $this->findProductByXmlId($product->getId())) {
+                    $this->update($record, $fields);
+                }
+                else {
+                    if ($settings->isGenerateSku()) {
+                        $fields['sku'] = (new SkuGenerator($product))->generate();
+                    }
+
+                    $this->create($fields);
+                }
             }
             else {
-                if ($settings->isGenerateSku()) {
-                    $fields['sku'] = (new SkuGenerator($product))->generate();
-                }
-
-                $this->create($fields);
+                Logger::notice('Product "%title" without categories', [
+                    '%title' => $product->getName(),
+                ]);
             }
         }
     }
