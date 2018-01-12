@@ -30,7 +30,7 @@ class EventHandler {
      * @throws \Exception
      * @throws \FieldException
      */
-    public function onAfterParse(Event $event) {
+    public function onImport(Event $event) {
         /** @var Result $data */
         $data = $event->getData();
 

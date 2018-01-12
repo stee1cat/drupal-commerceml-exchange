@@ -88,7 +88,7 @@ function commerce_exchange() {
         $eventHandler = new EventHandler($settings);
 
         $exchange = new CommerceMLExchange($exchangeConfig);
-        $exchange->subscribe(Events::ON_AFTER_PARSE, [$eventHandler, 'onAfterParse']);
+        $exchange->subscribe(Events::ON_IMPORT, [$eventHandler, 'onImport']);
         $exchange->start();
     }
     catch (\Exception $e) {
@@ -110,7 +110,7 @@ function commerce_exchange_batch_import() {
         $eventHandler = new EventHandler($settings);
 
         $exchange = new CommerceMLExchange($exchangeConfig);
-        $exchange->subscribe(Events::ON_AFTER_PARSE, [$eventHandler, 'onAfterParse']);
+        $exchange->subscribe(Events::ON_IMPORT, [$eventHandler, 'onImport']);
 
         /** @var ImportService $importService */
         $importService = $exchange->getContainer()
