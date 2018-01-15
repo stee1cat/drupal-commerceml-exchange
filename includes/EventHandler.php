@@ -57,4 +57,12 @@ class EventHandler {
         }
     }
 
+    public function onDeactivate() {
+        // nope
+    }
+
+    public function onComplete() {
+        Logger::info('Import process is complete');
+    }
+
 }

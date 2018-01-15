@@ -88,7 +88,11 @@ function commerce_exchange() {
         $eventHandler = new EventHandler($settings);
 
         $exchange = new CommerceMLExchange($exchangeConfig);
+
         $exchange->subscribe(Events::ON_IMPORT, [$eventHandler, 'onImport']);
+        $exchange->subscribe(Events::ON_DEACTIVATE, [$eventHandler, 'onDeactivate']);
+        $exchange->subscribe(Events::ON_COMPLETE, [$eventHandler, 'onComplete']);
+
         $exchange->start();
     }
     catch (\Exception $e) {
