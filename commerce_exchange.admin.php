@@ -72,6 +72,13 @@ function commerce_exchange_settings_form($form) {
         '#options' => commerce_exchange_product_reference_fields(),
     ];
 
+    $form[$catalogGroup][commerce_exchange_module('_image_reference_field')] = [
+        '#type' => 'select',
+        '#title' => t('Product image reference field'),
+        '#default_value' => $settings->getImageReferenceField(),
+        '#options' => commerce_exchange_get_fields_by_type('image'),
+    ];
+
     $form[$catalogGroup][commerce_exchange_module('_generate_sku')] = [
         '#type' => 'checkbox',
         '#title' => t('Generate SKU'),

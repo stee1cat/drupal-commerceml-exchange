@@ -43,6 +43,10 @@ class Settings {
         return variable_get(commerce_exchange_module('_product_reference_field'), 'field_product');
     }
 
+    public function getImageReferenceField() {
+        return variable_get(commerce_exchange_module('_image_reference_field'), 'field_images');
+    }
+
     public function getPriceType() {
         return variable_get(commerce_exchange_module('_price_type'), '');
     }
