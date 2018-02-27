@@ -69,14 +69,14 @@ function commerce_exchange_settings_form($form) {
         '#type' => 'select',
         '#title' => t('Product node reference field'),
         '#default_value' => $settings->getProductReferenceField(),
-        '#options' => commerce_exchange_product_reference_fields(),
+        '#options' => commerce_exchange_get_fields_group_by_type(),
     ];
 
     $form[$catalogGroup][commerce_exchange_module('_image_reference_field')] = [
         '#type' => 'select',
         '#title' => t('Product image reference field'),
         '#default_value' => $settings->getImageReferenceField(),
-        '#options' => commerce_exchange_get_fields_by_type('image'),
+        '#options' => commerce_exchange_get_fields_group_by_type(),
     ];
 
     $form[$catalogGroup][commerce_exchange_module('_generate_sku')] = [
@@ -96,7 +96,7 @@ function commerce_exchange_settings_form($form) {
         '#type' => 'select',
         '#title' => t('Category reference field'),
         '#default_value' => $settings->getCategoryReferenceField(),
-        '#options' => commerce_exchange_category_reference_fields(),
+        '#options' => commerce_exchange_get_fields_group_by_type(),
     ];
 
     $form[$catalogGroup][commerce_exchange_module('_price_type')] = [
@@ -121,20 +121,6 @@ function commerce_exchange_node_get_types() {
 }
 
 /**
- * @return string[]
- */
-function commerce_exchange_category_reference_fields() {
-    return commerce_exchange_get_fields_by_type('taxonomy_term_reference');
-}
-
-/**
- * @return string[]
- */
-function commerce_exchange_product_reference_fields() {
-    return commerce_exchange_get_fields_by_type('commerce_product_reference');
-}
-
-/**
  * @param string $type
  *
  * @return string[]
@@ -147,6 +133,21 @@ function commerce_exchange_get_fields_by_type($type) {
         if ($type && $field['type'] === $type && $field['active'] == 1) {
             $result[$name] = $name;
         }
+    }
+
+    return $result;
+}
+
+function commerce_exchange_get_fields_group_by_type() {
+    $result = [];
+    $fields = field_info_fields();
+
+    foreach ($fields as $name => $field) {
+        if (!isset($result[$field['type']])) {
+            $result[$field['type']] = [];
+        }
+
+        $result[$field['type']][$name] = $name;
     }
 
     return $result;
