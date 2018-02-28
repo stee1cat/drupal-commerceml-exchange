@@ -89,6 +89,13 @@ class ProductImporter extends AbstractImporter {
      */
     protected function create($fields) {
         $settings = $this->settings;
+        $nodeFields = [
+            'title',
+            'language',
+            'uid',
+            'body',
+            $settings->getCategoryReferenceField(),
+        ];
         $product = commerce_product_new($settings->getProductEntityType());
         $node = $this->createNode();
 
@@ -97,7 +104,7 @@ class ProductImporter extends AbstractImporter {
                 $product->{$field} = $value;
             }
 
-            if (in_array($field, ['title', 'language', 'uid', $settings->getCategoryReferenceField(), 'body'])) {
+            if (in_array($field, $nodeFields)) {
                 $node->{$field} = $value;
             }
         }
@@ -117,7 +124,14 @@ class ProductImporter extends AbstractImporter {
      * @throws \Exception
      */
     protected function update($product, $fields) {
-        $nodeFields = ['title', 'language', 'uid', $this->settings->getCategoryReferenceField(), 'body', 'status'];
+        $nodeFields = [
+            'title',
+            'language',
+            'uid',
+            'body',
+            'status',
+            $this->settings->getCategoryReferenceField(),
+        ];
         $node = $this->findNodeByProductId($product->product_id);
 
         foreach ($fields as $field => $value) {

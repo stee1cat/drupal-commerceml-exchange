@@ -68,13 +68,22 @@ class GroupImporter extends AbstractImporter {
 
     protected function update($fields) {
         if (is_array($fields)) {
+            $termFields = [
+                'tid',
+                'name',
+                'description',
+                'parent',
+                'path',
+                self::XML_ID_FIELD_NAME,
+            ];
+
             $term = new \stdClass();
             $term->vid = $this->vocabulary->getId();
             $term->language = 'ru';
             $term->weight = 0;
 
             foreach ($fields as $field => $value) {
-                if (in_array($field, ['tid', 'name', 'description', self::XML_ID_FIELD_NAME, 'parent', 'path'])) {
+                if (in_array($field, $termFields)) {
                     $term->{$field} = $value;
                 }
             }

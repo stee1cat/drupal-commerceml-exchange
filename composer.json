@@ -10,8 +10,8 @@
     "prefer-stable": true,
     "repositories": [
         {
-        "type": "vcs",
-        "url": "https://github.com/stee1cat/commerceml-exchange"
+            "type": "vcs",
+            "url": "https://github.com/stee1cat/commerceml-exchange"
         }
     ],
     "require": {
